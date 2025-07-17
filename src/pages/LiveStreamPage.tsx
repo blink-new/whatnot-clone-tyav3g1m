@@ -16,6 +16,7 @@ export function LiveStreamPage({ user, onNavigate }: LiveStreamPageProps) {
   const [viewerCount, setViewerCount] = useState(24)
   const [isFollowing, setIsFollowing] = useState(false)
   const [currentBid, setCurrentBid] = useState(18)
+  const [isHostMode, setIsHostMode] = useState(false)
   
   // Mock stream data - in real app this would come from props or API
   const streamData = {
@@ -85,6 +86,13 @@ export function LiveStreamPage({ user, onNavigate }: LiveStreamPageProps) {
           </Button>
           
           <div className="flex items-center space-x-2">
+            <Button
+              variant={isHostMode ? "default" : "outline"}
+              size="sm"
+              onClick={() => setIsHostMode(!isHostMode)}
+            >
+              {isHostMode ? "👩‍🍳" : "👀"}
+            </Button>
             <Badge className="bg-red-500 text-white animate-pulse">
               🔴 LIVE
             </Badge>
@@ -111,6 +119,13 @@ export function LiveStreamPage({ user, onNavigate }: LiveStreamPageProps) {
               </Button>
               
               <div className="flex items-center space-x-2">
+                <Button
+                  variant={isHostMode ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setIsHostMode(!isHostMode)}
+                >
+                  {isHostMode ? "👩‍🍳 Host Mode" : "👀 Viewer Mode"}
+                </Button>
                 <Badge className="bg-red-500 text-white animate-pulse">
                   🔴 LIVE
                 </Badge>
@@ -127,7 +142,7 @@ export function LiveStreamPage({ user, onNavigate }: LiveStreamPageProps) {
             <div className="relative">
               <LiveVideoPlayer
                 channelName={streamData.channelName}
-                isHost={false}
+                isHost={isHostMode}
                 onViewerCountChange={handleViewerCountChange}
                 className="w-full"
               />

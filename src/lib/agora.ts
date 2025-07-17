@@ -1,79 +1,74 @@
-import AgoraRTC, { 
-  IAgoraRTCClient, 
-  ICameraVideoTrack, 
-  IMicrophoneAudioTrack,
-  ILocalVideoTrack,
-  ILocalAudioTrack,
-  IRemoteVideoTrack,
-  IRemoteAudioTrack
-} from 'agora-rtc-sdk-ng'
+// Mock Live Stream Service for Demo
+// In production, replace with actual video streaming service like Agora, Twilio, or WebRTC
 
-// Agora configuration
-export const AGORA_CONFIG = {
-  // Agora App ID from environment variables
-  appId: import.meta.env.VITE_AGORA_APP_ID || 'your-agora-app-id',
-  // For production, you should generate tokens server-side
-  token: null as string | null
+export interface MockVideoTrack {
+  play: (element: HTMLElement) => void
+  stop: () => void
+  enabled: boolean
+  setEnabled: (enabled: boolean) => Promise<void>
 }
 
 export interface AgoraUser {
   uid: string | number
-  videoTrack?: IRemoteVideoTrack
-  audioTrack?: IRemoteAudioTrack
+  videoTrack?: MockVideoTrack
+  audioTrack?: MockVideoTrack
 }
 
 export class AgoraService {
-  private client: IAgoraRTCClient
-  private localVideoTrack: ICameraVideoTrack | null = null
-  private localAudioTrack: IMicrophoneAudioTrack | null = null
   private isJoined = false
-
-  constructor() {
-    this.client = AgoraRTC.createClient({ mode: 'live', codec: 'vp8' })
-    this.setupEventHandlers()
-  }
-
-  private setupEventHandlers() {
-    this.client.on('user-published', async (user, mediaType) => {
-      await this.client.subscribe(user, mediaType)
-      
-      if (mediaType === 'video') {
-        const remoteVideoTrack = user.videoTrack
-        if (remoteVideoTrack) {
-          // Emit event for UI to handle
-          this.onUserJoined?.(user.uid, remoteVideoTrack, user.audioTrack)
-        }
-      }
-      
-      if (mediaType === 'audio') {
-        const remoteAudioTrack = user.audioTrack
-        if (remoteAudioTrack) {
-          remoteAudioTrack.play()
-        }
-      }
-    })
-
-    this.client.on('user-unpublished', (user) => {
-      this.onUserLeft?.(user.uid)
-    })
-
-    this.client.on('user-left', (user) => {
-      this.onUserLeft?.(user.uid)
-    })
-  }
+  private localVideoTrack: MockVideoTrack | null = null
+  private localAudioTrack: MockVideoTrack | null = null
+  private mockStream: MediaStream | null = null
 
   // Event callbacks - set these from components
-  onUserJoined?: (uid: string | number, videoTrack?: IRemoteVideoTrack, audioTrack?: IRemoteAudioTrack) => void
+  onUserJoined?: (uid: string | number, videoTrack?: MockVideoTrack, audioTrack?: MockVideoTrack) => void
   onUserLeft?: (uid: string | number) => void
 
   async joinChannel(channelName: string, uid: string | number, role: 'host' | 'audience' = 'audience') {
     try {
-      // Set client role
-      await this.client.setClientRole(role)
+      console.log(`Joining channel: ${channelName} as ${role}`)
       
-      // Join the channel
-      await this.client.join(AGORA_CONFIG.appId, channelName, AGORA_CONFIG.token, uid)
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
       this.isJoined = true
+      
+      // Simulate other users joining for audience
+      if (role === 'audience') {
+        setTimeout(() => {
+          // Mock host video track
+          const mockVideoTrack: MockVideoTrack = {
+            play: (element: HTMLElement) => {
+              // Create a mock video element with cooking video
+              element.innerHTML = `
+                <div class="w-full h-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center relative overflow-hidden">
+                  <div class="absolute inset-0 bg-black/20"></div>
+                  <div class="text-center text-white z-10">
+                    <div class="text-6xl mb-4 animate-bounce">👩‍🍳</div>
+                    <h3 class="text-xl font-bold mb-2">Sarah's Live Kitchen</h3>
+                    <p class="text-sm opacity-90">Baking fresh chocolate chip cookies!</p>
+                    <div class="mt-4 flex justify-center space-x-2">
+                      <div class="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                      <div class="w-2 h-2 bg-white rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
+                      <div class="w-2 h-2 bg-white rounded-full animate-pulse" style="animation-delay: 0.4s"></div>
+                    </div>
+                  </div>
+                  <div class="absolute bottom-4 left-4 bg-red-500 text-white px-2 py-1 rounded text-xs font-bold animate-pulse">
+                    🔴 LIVE
+                  </div>
+                </div>
+              `
+            },
+            stop: () => {},
+            enabled: true,
+            setEnabled: async (enabled: boolean) => {
+              this.localVideoTrack!.enabled = enabled
+            }
+          }
+          
+          this.onUserJoined?.('host_sarah', mockVideoTrack)
+        }, 1500)
+      }
       
       return true
     } catch (error) {
@@ -84,11 +79,75 @@ export class AgoraService {
 
   async startLocalVideo() {
     try {
-      this.localVideoTrack = await AgoraRTC.createCameraVideoTrack()
-      this.localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack()
+      console.log('Starting local video...')
       
-      // Publish tracks
-      await this.client.publish([this.localVideoTrack, this.localAudioTrack])
+      // Try to get real camera access for host
+      try {
+        this.mockStream = await navigator.mediaDevices.getUserMedia({ 
+          video: true, 
+          audio: true 
+        })
+      } catch (error) {
+        console.log('Camera access denied, using mock video')
+      }
+      
+      this.localVideoTrack = {
+        play: (element: HTMLElement) => {
+          if (this.mockStream) {
+            // Use real camera if available
+            const video = document.createElement('video')
+            video.srcObject = this.mockStream
+            video.autoplay = true
+            video.muted = true
+            video.className = 'w-full h-full object-cover'
+            element.innerHTML = ''
+            element.appendChild(video)
+          } else {
+            // Fallback to mock video
+            element.innerHTML = `
+              <div class="w-full h-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center relative">
+                <div class="text-center text-white">
+                  <div class="text-6xl mb-4 animate-pulse">📹</div>
+                  <h3 class="text-xl font-bold mb-2">Your Live Stream</h3>
+                  <p class="text-sm opacity-90">Camera access needed for real video</p>
+                </div>
+                <div class="absolute bottom-4 left-4 bg-red-500 text-white px-2 py-1 rounded text-xs font-bold animate-pulse">
+                  🔴 LIVE
+                </div>
+              </div>
+            `
+          }
+        },
+        stop: () => {
+          if (this.mockStream) {
+            this.mockStream.getTracks().forEach(track => track.stop())
+            this.mockStream = null
+          }
+        },
+        enabled: true,
+        setEnabled: async (enabled: boolean) => {
+          this.localVideoTrack!.enabled = enabled
+          if (this.mockStream) {
+            this.mockStream.getVideoTracks().forEach(track => {
+              track.enabled = enabled
+            })
+          }
+        }
+      }
+      
+      this.localAudioTrack = {
+        play: () => {},
+        stop: () => {},
+        enabled: true,
+        setEnabled: async (enabled: boolean) => {
+          this.localAudioTrack!.enabled = enabled
+          if (this.mockStream) {
+            this.mockStream.getAudioTracks().forEach(track => {
+              track.enabled = enabled
+            })
+          }
+        }
+      }
       
       return this.localVideoTrack
     } catch (error) {
@@ -100,48 +159,50 @@ export class AgoraService {
   async stopLocalVideo() {
     if (this.localVideoTrack) {
       this.localVideoTrack.stop()
-      this.localVideoTrack.close()
       this.localVideoTrack = null
     }
     
     if (this.localAudioTrack) {
       this.localAudioTrack.stop()
-      this.localAudioTrack.close()
       this.localAudioTrack = null
+    }
+
+    if (this.mockStream) {
+      this.mockStream.getTracks().forEach(track => track.stop())
+      this.mockStream = null
     }
   }
 
   async leaveChannel() {
     try {
       await this.stopLocalVideo()
-      
-      if (this.isJoined) {
-        await this.client.leave()
-        this.isJoined = false
-      }
+      this.isJoined = false
+      console.log('Left channel')
     } catch (error) {
       console.error('Failed to leave channel:', error)
     }
   }
 
   async switchCamera() {
-    if (this.localVideoTrack) {
-      await this.localVideoTrack.switchDevice()
-    }
+    console.log('Switching camera...')
+    // Mock camera switch
+    return Promise.resolve()
   }
 
   async toggleMicrophone() {
     if (this.localAudioTrack) {
-      await this.localAudioTrack.setEnabled(!this.localAudioTrack.enabled)
-      return this.localAudioTrack.enabled
+      const newState = !this.localAudioTrack.enabled
+      await this.localAudioTrack.setEnabled(newState)
+      return newState
     }
     return false
   }
 
   async toggleCamera() {
     if (this.localVideoTrack) {
-      await this.localVideoTrack.setEnabled(!this.localVideoTrack.enabled)
-      return this.localVideoTrack.enabled
+      const newState = !this.localVideoTrack.enabled
+      await this.localVideoTrack.setEnabled(newState)
+      return newState
     }
     return false
   }

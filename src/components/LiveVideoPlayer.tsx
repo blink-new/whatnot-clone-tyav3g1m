@@ -13,8 +13,7 @@ import {
   MessageCircle,
   Share2
 } from 'lucide-react'
-import { agoraService } from '../lib/agora'
-import type { ICameraVideoTrack, IRemoteVideoTrack } from 'agora-rtc-sdk-ng'
+import { agoraService, type MockVideoTrack } from '../lib/agora'
 
 interface LiveVideoPlayerProps {
   channelName: string
@@ -38,7 +37,7 @@ export function LiveVideoPlayer({
   const [viewerCount, setViewerCount] = useState(0)
   const [likes, setLikes] = useState(0)
   const [isLiked, setIsLiked] = useState(false)
-  const [remoteUsers, setRemoteUsers] = useState<Map<string | number, IRemoteVideoTrack>>(new Map())
+  const [remoteUsers, setRemoteUsers] = useState<Map<string | number, MockVideoTrack>>(new Map())
 
   useEffect(() => {
     // Set up event handlers
