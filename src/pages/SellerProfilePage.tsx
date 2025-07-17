@@ -1,6 +1,7 @@
 import { ArrowLeft, MapPin, Star, Clock, Settings } from 'lucide-react'
 import { Button } from '../components/ui/button'
 import { Badge } from '../components/ui/badge'
+import { Logo } from '../components/Logo'
 
 interface SellerProfilePageProps {
   user: any
@@ -21,6 +22,8 @@ export function SellerProfilePage({ user, onNavigate }: SellerProfilePageProps) 
               <ArrowLeft className="h-5 w-5 mr-2" />
               Back
             </Button>
+            
+            <Logo size="sm" />
             
             <Button variant="outline" size="sm">
               <Settings className="h-4 w-4 mr-2" />

@@ -8,6 +8,7 @@ import { Input } from '../components/ui/input'
 import { Textarea } from '../components/ui/textarea'
 import { Label } from '../components/ui/label'
 import { LiveVideoPlayer } from '../components/LiveVideoPlayer'
+import { Logo } from '../components/Logo'
 
 interface MyKitchenPageProps {
   user: any
@@ -58,7 +59,7 @@ export function MyKitchenPage({ user, onNavigate }: MyKitchenPageProps) {
               Back
             </Button>
             
-            <h1 className="text-lg font-semibold">My Kitchen</h1>
+            <Logo size="sm" />
             
             <Button className="bg-primary hover:bg-primary/90">
               <Plus className="h-4 w-4 mr-2" />

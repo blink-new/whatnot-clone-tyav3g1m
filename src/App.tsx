@@ -5,6 +5,7 @@ import { LiveStreamPage } from './pages/LiveStreamPage'
 import { SellerProfilePage } from './pages/SellerProfilePage'
 import { MyKitchenPage } from './pages/MyKitchenPage'
 import { LocationPermissionModal } from './components/LocationPermissionModal'
+import { Logo } from './components/Logo'
 
 type Page = 'home' | 'live' | 'profile' | 'kitchen'
 
@@ -38,7 +39,7 @@ function App() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading LocalLive...</p>
+          <p className="text-muted-foreground">Loading Infomercialy...</p>
         </div>
       </div>
     )
@@ -49,9 +50,11 @@ function App() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-6">
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-primary mb-2">LocalLive</h1>
+            <div className="flex justify-center mb-4">
+              <Logo size="lg" />
+            </div>
             <p className="text-lg text-muted-foreground">
-              Discover fresh, homemade food from local bakers in your neighborhood
+              The ultimate live streaming marketplace for interactive shopping experiences
             </p>
           </div>
           <button

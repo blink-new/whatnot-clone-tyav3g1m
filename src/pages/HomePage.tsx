@@ -7,6 +7,7 @@ import { FoodItemCard } from '../components/FoodItemCard'
 import { LiveStreamCard } from '../components/LiveStreamCard'
 import { CategoryFilter } from '../components/CategoryFilter'
 import { LocationRadiusSelector } from '../components/LocationRadiusSelector'
+import { Logo } from '../components/Logo'
 
 interface HomePageProps {
   user: any
@@ -114,7 +115,7 @@ export function HomePage({ user, userLocation, onNavigate }: HomePageProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-primary">LocalLive</h1>
+              <Logo size="md" />
               {userLocation && (
                 <div className="ml-4 flex items-center text-sm text-gray-600">
                   <MapPin className="h-4 w-4 mr-1" />
